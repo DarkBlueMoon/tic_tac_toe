@@ -24,11 +24,26 @@ class Game
   end
 
   def update_board(choice)
+    # binding.pry
+    @board.each do |row|
+      idx = row.index(choice)
+      # TODO: Give user feedback when they select a taken slot.
+
+      # binding.pry
+      # if idx.is_a?(String) && (row[idx] == 'x' || row[idx] == 'o')
+      #   puts "This spot is already taken, please choose again."
+      #   return
+      if row.include?(choice)
+        # idx = row.index(choice)
+        row[idx] = current_player[:mark]
+      else
+        row
+      end
+    end
     puts "Board updated with #{choice} by Player #{current_player[:id]}."
   end
 
   def swap_players(curr_player)
-    
     if curr_player == @player_one
       self.current_player = @player_two
     else
@@ -36,19 +51,35 @@ class Game
     end
   end
 
+  def check_victory
+
+  end
+
+  def check_draw
+
+  end
+
   def start_game
     while is_running do 
       display_board
 
-      puts "Player #{current_player[:id]} (#{current_player[:mark]}), please select an empty spot (1 - 9)."
+      puts "Player #{current_player[:id]} (#{current_player[:mark]}), please select an empty spot."
       player_choice = gets.chomp.to_i
 
+      # Mod quit
+      if player_choice == 0
+        is_running = false
+        return
+      end
+
       until player_choice >= 1 && player_choice <= 9
-        puts "Invalid choice! Only choose 1 - 9."
+        puts "Invalid choice! Choose an empty spot."
         player_choice = gets.chomp.to_i
       end
 
-      update_board(player_choice)
+      update_board(player_choice.to_i)
+      check_victory()
+      check_draw()
       swap_players(current_player)
     end
   end
