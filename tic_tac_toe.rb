@@ -1,15 +1,19 @@
+require 'pry'
+
 WINNING_COMBINATIONS = [
   [1,2,3], [4,5,6], [7,8,9], [1,4,7], [2,5,8], [3,6,9], [1,5,9], [3,5,7]
 ]
 
 class Game
+  attr_accessor :current_player
+  attr_reader :is_running
+
   def initialize
-    # @board = [[1,2,3], [4,5,6], [7,8,9]]
-    @board = Array.new(3, Array.new(3, "empty"))
+    @board = [[1,2,3], [4,5,6], [7,8,9]]
     @player_one = {id: 1, mark: 'x'}
     @player_two = {id: 2, mark: 'o'}
     @current_player = @player_one
-    is_running = true
+    @is_running = true
   end
 
   # Display game board as 3x3
@@ -19,20 +23,37 @@ class Game
     end
   end
 
-  # For now, player one always goes first.
-  # TODO (maybe): have starting player be randomly selected.
+  def update_board(choice)
+    puts "Board updated with #{choice} by Player #{current_player[:id]}."
+  end
+
+  def swap_players(curr_player)
+    
+    if curr_player == @player_one
+      self.current_player = @player_two
+    else
+      self.current_player = @player_one
+    end
+  end
+
   def start_game
-    # While is_running is true:
+    while is_running do 
+      display_board
 
-    # Display game board
-    # display_board
-    # Prompt current player to select 1 - 9
-    # Format: current_player (markhere), make your move: 1 - 9
+      puts "Player #{current_player[:id]} (#{current_player[:mark]}), please select an empty spot (1 - 9)."
+      player_choice = gets.chomp.to_i
 
-    # Add player's mark to the board in that position
+      until player_choice >= 1 && player_choice <= 9
+        puts "Invalid choice! Only choose 1 - 9."
+        player_choice = gets.chomp.to_i
+      end
+
+      update_board(player_choice)
+      swap_players(current_player)
+    end
   end
 end
 
 game = Game.new
 
-game.display_board
+game.start_game
