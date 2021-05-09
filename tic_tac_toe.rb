@@ -1,3 +1,7 @@
+WINNING_COMBINATIONS = [
+  [0,1,2], [3,4,5], [6,7,8], [0,3,6], [1,4,7], [2,5,8], [0,4,8], [2,4,6]
+]
+
 # "Player"
 #   will have an ID (1 or 2) and a mark ('x' or 'o')
 #   gives its moves as a #, 1-9, which will be converted to array indices (0-8)
@@ -22,7 +26,7 @@ class Board
   attr_reader :board
   
   def initialize
-    @board = [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ']
+    @board = (1..9).to_a
   end
 
   # Converts the player's 1-9 selection to 0-8 array index.
@@ -36,21 +40,37 @@ class Board
     converted_move.between?(0, 8) && empty?(board[converted_move])
   end
 
+  # Returns if the space is available (has an integer in it.)
   def empty?(space)
-    space == "" || space == " " || space == nil
+    space.is_a?(Integer)
   end
 
-  def update_board(index, player)
-    board[index] = player.mark
+  # Modifies the player's desired space with their mark.
+  def update(index, player)
+    board[move_to_index(index)] = player.mark
   end
 
   # Displays the board in a 3x3 grid.
-  def display_board
+  def display
+    puts
     puts " #{board[0]} | #{board[1]} | #{board[2]} "
     puts "-----------"
     puts " #{board[3]} | #{board[4]} | #{board[5]} "
     puts "-----------"
     puts " #{board[6]} | #{board[7]} | #{board[8]} "
+    puts
+  end
+
+  def winner?
+
+  end
+
+  def tie?
+    !winner? && full?
+  end
+
+  def full?
+    board.none? { |elem| elem.is_a?(Integer) }
   end
 end
 
@@ -64,13 +84,17 @@ end
 #   keeps track of the current player
 #   swaps the current player after each move is made.
 class Game
-  attr_accessor :game_board, :current_player
-  def initialize(player_one, player_two, game_board)
-    @player_one = player_one
-    @player_two = player_two
+  attr_accessor :current_player
+  attr_reader :game_board
+
+  def initialize
+    @player_one = Player.new(1, 'X')
+    @player_two = Player.new(2, 'O')
     @current_player = @player_one
-    @game_board = game_board
+    @game_board = Board.new
     @is_running = true
+
+    self.play_game
   end
 
   def swap_players
@@ -82,34 +106,35 @@ class Game
   end
 
   def play_game
+    
     while @is_running do
-      game_board.display_board
+      
+      game_board.display
       puts "Player #{current_player.id} (#{current_player.mark}), please select 1-9."
       choice = gets.chomp.to_i
-
+      
       if (game_board.validate_move(choice))
-        puts "Valid choice!"
-        game_board.update_board(choice, @current_player)
-        swap_players()
+        # puts "Valid choice!"
+        game_board.update(choice, current_player)
+      else
+        puts "Desired space is occupied, please choose 1-9 again."
       end
+      
+      if (game_board.winner?)
+        puts "Player #{current_player.id} (#{current_player.mark}) is the winner!"
+        @is_running = false
+      elsif (game_board.tie?)
+        puts "Game ends in a tie!"
+        @is_running = false
+      end
+
+      swap_players()
+
     end
   end
 end
 
-board = Board.new
-player_one = Player.new(1, 'X')
-player_two = Player.new(2, 'O')
-game = Game.new(player_one, player_two, board)
-game.play_game
-
-# Rules
-#   2 players, 'x' and 'o'
-#   9 spaces on a 3x3 grid
-#   Each player takes turns picking an available slot until there is either a winner or a tie game.
-
-
-
-
+game = Game.new
 
 # Game flow
 #   Game class checks the board for a winner or a tied game. If neither are true, game is still in progress.
