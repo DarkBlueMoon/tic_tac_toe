@@ -3,6 +3,7 @@
 #   gives its moves as a #, 1-9, which will be converted to array indices (0-8)
 #   passes its move to the board class, which will update the board if the move is valid
 class Player
+  attr_reader :id, :mark
   def initialize(id, mark)
     @id = id
     @mark = mark
@@ -32,13 +33,15 @@ class Board
   # Returns if the desired move is in an empty space & is between index 0-8.
   def validate_move(player_move)
     converted_move = move_to_index(player_move)
-    if converted_move.between?(0, 8) && empty?(board[converted_move])
-      # board[converted_move] = current_player's move
-    end
+    converted_move.between?(0, 8) && empty?(board[converted_move])
   end
 
   def empty?(space)
     space == "" || space == " " || space == nil
+  end
+
+  def update_board(index, player)
+    board[index] = player.mark
   end
 
   # Displays the board in a 3x3 grid.
@@ -60,6 +63,44 @@ end
 #   displays the result of the game
 #   keeps track of the current player
 #   swaps the current player after each move is made.
+class Game
+  attr_accessor :game_board, :current_player
+  def initialize(player_one, player_two, game_board)
+    @player_one = player_one
+    @player_two = player_two
+    @current_player = @player_one
+    @game_board = game_board
+    @is_running = true
+  end
+
+  def swap_players
+    if current_player == @player_one
+      self.current_player = @player_two
+    else
+      self.current_player = @player_one
+    end
+  end
+
+  def play_game
+    while @is_running do
+      game_board.display_board
+      puts "Player #{current_player.id} (#{current_player.mark}), please select 1-9."
+      choice = gets.chomp.to_i
+
+      if (game_board.validate_move(choice))
+        puts "Valid choice!"
+        game_board.update_board(choice, @current_player)
+        swap_players()
+      end
+    end
+  end
+end
+
+board = Board.new
+player_one = Player.new(1, 'X')
+player_two = Player.new(2, 'O')
+game = Game.new(player_one, player_two, board)
+game.play_game
 
 # Rules
 #   2 players, 'x' and 'o'
