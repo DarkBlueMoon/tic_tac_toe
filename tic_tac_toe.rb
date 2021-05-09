@@ -2,10 +2,6 @@ WINNING_COMBINATIONS = [
   [0,1,2], [3,4,5], [6,7,8], [0,3,6], [1,4,7], [2,5,8], [0,4,8], [2,4,6]
 ]
 
-# "Player"
-#   will have an ID (1 or 2) and a mark ('x' or 'o')
-#   gives its moves as a #, 1-9, which will be converted to array indices (0-8)
-#   passes its move to the board class, which will update the board if the move is valid
 class Player
   attr_reader :id, :mark
   def initialize(id, mark)
@@ -14,14 +10,6 @@ class Player
   end
 end
 
-# "Board"
-#   an array with 9 spaces, indexed 0-8
-#   holds the game board var itself
-#   converts player-passed move into array index
-#   validates player moves: valid if space is free & moves index is between 0-8
-#   modify board index w/ valid move
-#   displays board in 3x3 grid
-#   will likely need access to current player.
 class Board
   attr_reader :board
   
@@ -48,6 +36,7 @@ class Board
   # Modifies the player's desired space with their mark.
   def update(index, player)
     board[move_to_index(index)] = player.mark
+    display
   end
 
   # Displays the board in a 3x3 grid.
@@ -61,12 +50,16 @@ class Board
     puts
   end
 
-  def winner?
-
+  def winner?(player)
+    WINNING_COMBINATIONS.any? do |line|
+      line.all? { |position| board[position] == player.mark}
+    end
   end
 
+  # Reaching this check means the game verified there is no winner yet.
+  # The only other options are: board is full or game is still in progress.
   def tie?
-    !winner? && full?
+    full?
   end
 
   def full?
@@ -74,15 +67,6 @@ class Board
   end
 end
 
-# "Game"
-#   should have readonly access to the board
-#   should have readonly access to the players
-#   loops until the game is over, prompting users to take their 'turn'
-#   checks, after each 'turn', for whether there's a winner, a tied game, or a game in progress
-#   stores winning combinations and checks the board for these.
-#   displays the result of the game
-#   keeps track of the current player
-#   swaps the current player after each move is made.
 class Game
   attr_accessor :current_player
   attr_reader :game_board
@@ -106,21 +90,19 @@ class Game
   end
 
   def play_game
+    game_board.display
     
     while @is_running do
-      
-      game_board.display
       puts "Player #{current_player.id} (#{current_player.mark}), please select 1-9."
       choice = gets.chomp.to_i
       
       if (game_board.validate_move(choice))
-        # puts "Valid choice!"
         game_board.update(choice, current_player)
       else
         puts "Desired space is occupied, please choose 1-9 again."
       end
       
-      if (game_board.winner?)
+      if (game_board.winner?(current_player))
         puts "Player #{current_player.id} (#{current_player.mark}) is the winner!"
         @is_running = false
       elsif (game_board.tie?)
@@ -129,17 +111,8 @@ class Game
       end
 
       swap_players()
-
     end
   end
 end
 
 game = Game.new
-
-# Game flow
-#   Game class checks the board for a winner or a tied game. If neither are true, game is still in progress.
-#   Game prompts the current_player to make their move. Displays the board. Player chooses between 1 and 9.
-#   Player's move is passed to the board class which converts the move into array indices & validates the move.
-#   If the move is valid, board updates that array index with the player's move.
-#     Board tells game the move was valid, game switches players, displays board, asks next player for their move.
-#   If the move is invalid, board tells the game that the move was invalid, game prompts for another move.
